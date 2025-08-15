@@ -3,179 +3,157 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simulador de Biologia</title>
+<title>Simulador de Biologia Avançado</title>
 <style>
-    /* ======================== Reset e Layout ======================== */
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: 'Arial', sans-serif;
-    }
-
-    body {
-        background: linear-gradient(to bottom, #c2f0c2, #e0ffe0);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: flex-start;
-        height: 100vh;
-        overflow: hidden;
-        touch-action: manipulation;
-    }
-
-    h1 {
-        margin: 20px;
-        color: #1b5e20;
-        text-shadow: 1px 1px 2px #fff;
-    }
-
-    /* ======================== Área do Jogo ======================== */
-    #gameArea {
-        position: relative;
-        width: 90vw;
-        height: 70vh;
-        border: 3px solid #1b5e20;
-        border-radius: 15px;
-        background: #a8e6a3;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-    }
-
-    .cell {
-        position: absolute;
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        background: radial-gradient(circle, #80c080 0%, #338033 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #fff;
-        font-weight: bold;
-        cursor: pointer;
-        user-select: none;
-        transition: transform 0.2s;
-    }
-
-    .cell:hover {
-        transform: scale(1.2);
-    }
-
-    /* ======================== Painel de Pontuação ======================== */
-    #scoreBoard {
-        margin-top: 15px;
-        font-size: 18px;
-        font-weight: bold;
-        color: #1b5e20;
-    }
-
-    /* ======================== Botões ======================== */
-    .btn {
-        margin: 10px 5px;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 10px;
-        background-color: #1b5e20;
-        color: white;
-        font-weight: bold;
-        font-size: 16px;
-        cursor: pointer;
-        transition: background-color 0.2s;
-    }
-
-    .btn:hover {
-        background-color: #338033;
-    }
-
-    /* ======================== Mensagem Viciante ======================== */
-    #message {
-        margin-top: 10px;
-        font-size: 16px;
-        color: #1b5e20;
-        font-style: italic;
-        min-height: 20px;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; }
+    body { background: linear-gradient(to bottom, #d0f0d0, #f0fff0); display: flex; flex-direction: column; align-items: center; justify-content: flex-start; height: 100vh; overflow: hidden; touch-action: manipulation; }
+    h1 { margin: 15px; color: #1b5e20; text-shadow: 1px 1px 2px #fff; }
+    #gameArea { position: relative; width: 90vw; height: 70vh; border: 3px solid #1b5e20; border-radius: 15px; background: #a8e6a3; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start; }
+    .cell { position: absolute; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; cursor: pointer; user-select: none; transition: transform 0.2s, opacity 0.3s; }
+    .cell.normal { background: radial-gradient(circle, #80c080 0%, #338033 100%); }
+    .cell.fast { background: radial-gradient(circle, #ffd700 0%, #ffa500 100%); width: 40px; height: 40px; }
+    .cell.resistant { background: radial-gradient(circle, #ff6347 0%, #b22222 100%); width: 60px; height: 60px; }
+    .cell:hover { transform: scale(1.2); }
+    #scoreBoard { margin-top: 15px; font-size: 18px; font-weight: bold; color: #1b5e20; }
+    .btn { margin: 10px 5px; padding: 10px 20px; border: none; border-radius: 10px; background-color: #1b5e20; color: white; font-weight: bold; font-size: 16px; cursor: pointer; transition: background-color 0.2s; }
+    .btn:hover { background-color: #338033; }
+    #message { margin-top: 10px; font-size: 16px; color: #1b5e20; font-style: italic; min-height: 20px; }
+    .particle { position: absolute; border-radius: 50%; pointer-events: none; }
 </style>
 </head>
 <body>
-<h1>Simulador de Biologia</h1>
+<h1>Simulador de Biologia Avançado</h1>
 <div id="gameArea"></div>
-<div id="scoreBoard">Pontuação: 0</div>
+<div id="scoreBoard">Pontuação: 0 | Nível: 1</div>
 <div id="message">Clique nas células para estudá-las!</div>
 <button class="btn" onclick="startGame()">Iniciar Jogo</button>
 <button class="btn" onclick="upgrade()">Evoluir Célula (+1)</button>
 
 <script>
-/* ======================== Variáveis do Jogo ======================== */
 let gameArea = document.getElementById('gameArea');
 let scoreBoard = document.getElementById('scoreBoard');
 let message = document.getElementById('message');
 let score = 0;
-let cellCount = 0;
+let level = 1;
 let gameInterval;
-let cellSpeed = 3000; // Tempo de spawn inicial
+let cellSpeed = 2000;
+let maxCells = 5;
 
-/* ======================== Função para criar célula ======================== */
+/* ======================== Células e Tipos ======================== */
+const cellTypes = [
+    { type: 'normal', points: 1 },
+    { type: 'fast', points: 2 },
+    { type: 'resistant', points: 3 }
+];
+
+function randomCellType() {
+    let rand = Math.random();
+    if (rand < 0.6) return cellTypes[0]; // normal
+    else if (rand < 0.85) return cellTypes[1]; // fast
+    else return cellTypes[2]; // resistant
+}
+
+/* ======================== Criar célula ======================== */
 function createCell() {
+    let cellData = randomCellType();
     let cell = document.createElement('div');
-    cell.classList.add('cell');
+    cell.classList.add('cell', cellData.type);
     cell.textContent = 'C';
 
-    // Posicionamento aleatório dentro da área
-    let maxX = gameArea.clientWidth - 50;
-    let maxY = gameArea.clientHeight - 50;
+    // Posicionamento aleatório
+    let maxX = gameArea.clientWidth - 60;
+    let maxY = gameArea.clientHeight - 60;
     let posX = Math.random() * maxX;
     let posY = Math.random() * maxY;
-
     cell.style.left = posX + 'px';
     cell.style.top = posY + 'px';
 
     // Clique na célula
-    cell.addEventListener('click', function() {
-        score++;
-        scoreBoard.textContent = "Pontuação: " + score;
-        message.textContent = "Você estudou uma célula!";
+    cell.addEventListener('click', () => {
+        score += cellData.points;
+        scoreBoard.textContent = `Pontuação: ${score} | Nível: ${level}`;
+        message.textContent = `Você estudou uma célula ${cellData.type}!`;
+        createParticles(posX + 25, posY + 25, cellData.type);
         cell.remove();
+        checkLevelUp();
     });
 
     gameArea.appendChild(cell);
 
-    // Célula some sozinha depois de 5s
+    // Célula desaparece
     setTimeout(() => {
         if (cell.parentNode) {
             cell.remove();
-            message.textContent = "Uma célula escapou!";
+            message.textContent = `Uma célula ${cellData.type} escapou!`;
         }
-    }, 5000);
+    }, cellData.type === 'fast' ? 3000 : 5000);
 }
 
-/* ======================== Função de Upgrade ======================== */
+/* ======================== Sistema de partículas ======================== */
+function createParticles(x, y, type) {
+    for(let i = 0; i < 10; i++) {
+        let particle = document.createElement('div');
+        particle.classList.add('particle');
+        particle.style.width = '6px';
+        particle.style.height = '6px';
+        particle.style.backgroundColor = type === 'fast' ? '#ff0' : type === 'resistant' ? '#f44' : '#4f4';
+        particle.style.left = x + 'px';
+        particle.style.top = y + 'px';
+        gameArea.appendChild(particle);
+
+        let angle = Math.random() * 2 * Math.PI;
+        let distance = Math.random() * 50;
+        let dx = Math.cos(angle) * distance;
+        let dy = Math.sin(angle) * distance;
+
+        particle.animate([
+            { transform: 'translate(0,0)', opacity: 1 },
+            { transform: `translate(${dx}px, ${dy}px)`, opacity: 0 }
+        ], { duration: 600, easing: 'ease-out' });
+
+        setTimeout(() => particle.remove(), 600);
+    }
+}
+
+/* ======================== Sistema de nível ======================== */
+function checkLevelUp() {
+    let newLevel = Math.floor(score / 10) + 1;
+    if (newLevel > level) {
+        level = newLevel;
+        cellSpeed = Math.max(500, cellSpeed - 200);
+        maxCells++;
+        message.textContent = `Parabéns! Você alcançou o nível ${level}!`;
+        restartGameInterval();
+    }
+}
+
+/* ======================== Upgrade ======================== */
 function upgrade() {
-    cellSpeed = cellSpeed > 500 ? cellSpeed - 300 : 500; // diminui o tempo para spawn mais rápido
+    cellSpeed = Math.max(500, cellSpeed - 300);
     message.textContent = "As células estão se multiplicando mais rápido!";
+    restartGameInterval();
 }
 
-/* ======================== Função do Loop do Jogo ======================== */
+/* ======================== Loop do jogo ======================== */
 function startGame() {
     clearInterval(gameInterval);
     score = 0;
-    scoreBoard.textContent = "Pontuação: " + score;
-    message.textContent = "O estudo começou!";
+    level = 1;
+    cellSpeed = 2000;
+    maxCells = 5;
     gameArea.innerHTML = '';
-
-    gameInterval = setInterval(() => {
-        createCell();
-    }, cellSpeed);
+    scoreBoard.textContent = `Pontuação: ${score} | Nível: ${level}`;
+    message.textContent = "O estudo começou!";
+    restartGameInterval();
 }
 
-/* ======================== Mecânicas Viciante ======================== */
-/* - Células aparecem aleatoriamente. 
-   - Você pode acelerar o spawn. 
-   - Clique rápido para estudar mais células.
-   - Pontuação aumenta conforme evolui. */
+function restartGameInterval() {
+    clearInterval(gameInterval);
+    gameInterval = setInterval(() => {
+        let cellsInGame = gameArea.querySelectorAll('.cell').length;
+        if (cellsInGame < maxCells) createCell();
+    }, cellSpeed);
+}
 </script>
 </body>
 </html>
