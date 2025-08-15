@@ -110,9 +110,56 @@
     a.link { color: var(--brand); text-decoration: none; }
     a.link:hover { text-decoration: underline; }
     .top-btn { position:fixed; bottom:20px; right:20px; padding:10px 14px; border-radius:999px; border:1px solid var(--border); background: var(--panel); color: var(--text); box-shadow: var(--shadow); }
-  </style>
+  
+    /* Skip link para acessibilidade */
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: var(--brand);
+      color: #000;
+      padding: 8px 12px;
+      z-index: 1000;
+      transition: top 0.3s;
+    }
+    .skip-link:focus {
+      top: 10px;
+    }
+
+    /* Melhor breakpoint para tablets */
+    @media (min-width: 768px) and (max-width: 999px) {
+      .grid { grid-template-columns: 240px 1fr; }
+    }
+    @media (max-width: 480px) {
+      .container { padding: 12px; }
+      header.hero { padding: 20px; }
+    }
+
+    /* Botão de alternar tema */
+    .theme-toggle {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      cursor: pointer;
+      box-shadow: var(--shadow);
+    }
+
+    /* Link ativo no TOC */
+    nav.toc a[aria-current="true"] {
+      background: rgba(34,211,238,.15);
+      border-color: rgba(34,211,238,.4);
+      font-weight: bold;
+    }
+
+</style>
 </head>
 <body>
+  <a href="#inicio" class="skip-link">Pular para conteúdo</a>
   <div class="container">
     <header class="hero" id="inicio">
       <h1 class="title">📘 <span id="project-name">NOME DO PROJETO</span></h1>
@@ -530,5 +577,46 @@ labels: [enhancement]
       if (el && el.textContent === 'NOME DO PROJETO') el.textContent = repoName;
     }
   </script>
+
+  <button class="theme-toggle" id="theme-toggle" aria-label="Alternar tema">🌓</button>
+  <script>
+    // Alternância de tema claro/escuro
+    const toggleBtn = document.getElementById('theme-toggle');
+    toggleBtn.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      if (current === 'light') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('theme', 'light');
+      }
+    });
+    // Carregar preferência salva
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    }
+
+    // Destaque de link ativo no TOC
+    const sections = document.querySelectorAll('main section[id]');
+    const tocLinks = document.querySelectorAll('nav.toc a');
+    window.addEventListener('scroll', () => {
+      let currentId = '';
+      sections.forEach(sec => {
+        const rect = sec.getBoundingClientRect();
+        if (rect.top <= 100 && rect.bottom >= 100) {
+          currentId = sec.id;
+        }
+      });
+      tocLinks.forEach(link => {
+        link.removeAttribute('aria-current');
+        if (link.getAttribute('href') === '#' + currentId) {
+          link.setAttribute('aria-current', 'true');
+        }
+      });
+    });
+  </script>
+
 </body>
 </html>
