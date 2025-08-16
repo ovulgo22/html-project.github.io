@@ -37,28 +37,23 @@ function spawnCell(){
     cell.style.left=Math.random()*(gameArea.clientWidth-size)+'px';
     cell.style.top=Math.random()*(gameArea.clientHeight-size)+'px';
 
-    // Define datasets
     cell.dataset.type = type;
     cell.dataset.speed = 1;
-    cell.dataset.multiplier = 1;
-
-    // Clique funcional
-    cell.addEventListener('click',()=>{
-        let t = cell.dataset.type;
-        playSound(t==='normal'?'clickNormal':
-                  t==='fast'?'clickFast':
-                  t==='resistant'?'clickResistant':'clickLegendary');
-        let mult = parseFloat(cell.dataset.multiplier);
-        let gain = Math.floor(10*mult);
-        score += gain; combo++; updateHUD();
-        checkAchievements();
-        checkLevelUp();
-        cell.remove();
-        spawnCell();
-    });
+    cell.dataset.multiplier = type==='normal'?1:type==='fast'?1.2:type==='resistant'?1.5:2.5;
 
     gameArea.appendChild(cell);
 }
+
+// Coleta automática
+document.getElementById('autoCollectBtn').addEventListener('click',()=>{
+    document.querySelectorAll('.cell').forEach(cell=>{
+        let mult = parseFloat(cell.dataset.multiplier);
+        let gain = Math.floor(10 * mult);
+        score += gain;
+    });
+    combo++;
+    updateHUD();
+});
 
 function checkAchievements(){
     if(combo>=5 && !achievements.comboMaster){achievements.comboMaster=true; addBadge("Combo Master!");}
