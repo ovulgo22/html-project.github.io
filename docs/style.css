@@ -1,0 +1,135 @@
+/* Reset básico */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #e0f7fa;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  min-height: 100vh;
+}
+
+h1 {
+  color: #00796b;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Área do simulador */
+#simulator {
+  background: #ffffffcc;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  padding: 20px;
+  width: 100%;
+  max-width: 900px;
+}
+
+/* Células com formatos diferentes */
+.cell {
+  width: 50px;
+  height: 50px;
+  display: inline-block;
+  margin: 10px;
+  transition: transform 0.3s;
+  position: relative;
+}
+
+.cell:hover {
+  transform: scale(1.2);
+}
+
+/* Formatos */
+.circle {
+  border-radius: 50%;
+  background: #ffab91;
+}
+
+.square {
+  background: #81d4fa;
+}
+
+.triangle {
+  width: 0;
+  height: 0;
+  border-left: 25px solid transparent;
+  border-right: 25px solid transparent;
+  border-bottom: 50px solid #a5d6a7;
+}
+
+.hexagon {
+  width: 60px;
+  height: 34px;
+  background: #ce93d8;
+  position: relative;
+  margin: 17px 10px;
+}
+
+.hexagon:before,
+.hexagon:after {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 0;
+  border-left: 30px solid transparent;
+  border-right: 30px solid transparent;
+}
+
+.hexagon:before {
+  top: -17px;
+  border-bottom: 17px solid #ce93d8;
+}
+
+.hexagon:after {
+  bottom: -17px;
+  border-top: 17px solid #ce93d8;
+}
+
+/* Estatísticas */
+#stats {
+  margin-top: 20px;
+  font-size: 1.1em;
+}
+
+/* Botões */
+.controls {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+button {
+  padding: 10px 20px;
+  margin: 5px;
+  font-size: 1em;
+  border: none;
+  border-radius: 10px;
+  background-color: #00796b;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #004d40;
+}
+
+/* Adaptativo para tablet */
+@media (max-width: 768px) {
+  .cell {
+    width: 40px;
+    height: 40px;
+  }
+
+  button {
+    width: 45%;
+    margin-bottom: 10px;
+  }
+}
