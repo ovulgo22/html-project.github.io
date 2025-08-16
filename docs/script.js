@@ -1,10 +1,8 @@
-// === Variáveis principais ===
 let score = 0, level = 1, record = 0, prestige = 0, combo = 0;
 let gameArea = document.getElementById('gameArea');
 let scoreBoard = document.getElementById('scoreBoard');
 let comboFill = document.getElementById('comboFill');
 let badgesDiv = document.getElementById('badges');
-let missionsDiv = document.getElementById('missions');
 let researchesDiv = document.getElementById('researches');
 
 let achievements = {};
@@ -16,7 +14,6 @@ let researches = [
 
 let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
 
-// === Funções básicas ===
 function updateHUD(){
     scoreBoard.textContent=`Pontuação: ${score} | Nível: ${level} | Recorde: ${record} | Prestígio: ${prestige}`;
     comboFill.style.width=Math.min(combo*20,100)+'%';
@@ -40,23 +37,27 @@ function spawnCell(){
     cell.style.left=Math.random()*(gameArea.clientWidth-size)+'px';
     cell.style.top=Math.random()*(gameArea.clientHeight-size)+'px';
 
-    gameArea.appendChild(cell);
+    // Define datasets
+    cell.dataset.type = type;
+    cell.dataset.speed = 1;
+    cell.dataset.multiplier = 1;
 
-    // Clique na célula
+    // Clique funcional
     cell.addEventListener('click',()=>{
-        playSound(type==='normal'?'clickNormal':type==='fast'?'clickFast':type==='resistant'?'clickResistant':'clickLegendary');
-        let mult = researches.reduce((m,r)=>r.bought&&r.multiplier?m*r.multiplier:m,1);
+        let t = cell.dataset.type;
+        playSound(t==='normal'?'clickNormal':
+                  t==='fast'?'clickFast':
+                  t==='resistant'?'clickResistant':'clickLegendary');
+        let mult = parseFloat(cell.dataset.multiplier);
         let gain = Math.floor(10*mult);
-        if(type==='fast') gain*=1.5;
-        if(type==='resistant') gain*=2;
-        if(type==='legendary') gain*=5;
-
-        score+=gain; combo++; updateHUD();
-        cell.remove();
-        spawnCell();
+        score += gain; combo++; updateHUD();
         checkAchievements();
         checkLevelUp();
+        cell.remove();
+        spawnCell();
     });
+
+    gameArea.appendChild(cell);
 }
 
 function checkAchievements(){
@@ -82,7 +83,6 @@ function buyResearch(index){
     }
 }
 
-// === Prestígio ===
 function doPrestige(){
     if(score>=1000){
         prestige++; score=0; level=1; combo=0;
@@ -91,7 +91,6 @@ function doPrestige(){
     }
 }
 
-// === Leaderboard ===
 function saveLeaderboard(){
     leaderboard.push({score:score,prestige:prestige,date:new Date().toLocaleDateString()});
     leaderboard.sort((a,b)=>b.score-a.score);
@@ -109,16 +108,12 @@ function showLeaderboard(){
     });
 }
 
-// === Eventos Botões ===
-document.getElementById('startBtn').addEventListener('click',()=>{
-    spawnCell();
-    playSound('ambient');
-});
+// Botões
+document.getElementById('startBtn').addEventListener('click',()=>spawnCell());
 document.getElementById('upgradeBtn').addEventListener('click',()=>buyResearch(0));
 document.getElementById('prestigeBtn').addEventListener('click',()=>doPrestige());
 document.getElementById('creditsBtn').addEventListener('click',()=>document.getElementById('creditsModal').style.display='flex');
 document.getElementById('leaderboardBtn').addEventListener('click',()=>{showLeaderboard();document.getElementById('leaderboardModal').style.display='flex';});
-
 document.getElementById('closeModal').addEventListener('click',()=>document.getElementById('creditsModal').style.display='none');
 document.getElementById('closeLeaderboard').addEventListener('click',()=>document.getElementById('leaderboardModal').style.display='none');
 
