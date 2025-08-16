@@ -3,31 +3,37 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simulador de Biologia</title>
+  <title>Simulador Biológico & Horóscopo</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header>
-    <h1>Simulador Científico de Biologia</h1>
-    <p>Observe e interaja com diferentes tipos de células!</p>
+    <h1>🔬 Simulador Biológico & Horóscopo ✨</h1>
   </header>
 
   <main>
-    <canvas id="bioCanvas"></canvas>
+    <aside class="painel">
+      <h2>⚗️ Laboratório Virtual</h2>
+      <button onclick="adicionarCelulaAleatoria()">➕ Nova Célula</button>
+      <button onclick="limparCelulas()">🗑️ Limpar</button>
+      <p><strong>Total de Células:</strong> <span id="contador">0</span>/100</p>
 
-    <div id="controls">
-      <button onclick="adicionarCelula('circulo')">Adicionar Célula Circular</button>
-      <button onclick="adicionarCelula('quadrado')">Adicionar Célula Quadrada</button>
-      <button onclick="adicionarCelula('estrela')">Adicionar Célula Estrela</button>
-      <button onclick="adicionarCelula('triangulo')">Adicionar Célula Triangular</button>
-      <button onclick="limparCelulas()">Limpar</button>
-    </div>
+      <h3>🔮 Configurações</h3>
+      <label>Velocidade: <input type="range" id="velocidade" min="0.5" max="3" step="0.1" value="1"></label>
+      <label>Chance de Mutação (%): <input type="number" id="mutacao" min="0" max="100" value="15"></label>
+    </aside>
+
+    <section class="canvas-container">
+      <canvas id="bioCanvas"></canvas>
+    </section>
   </main>
 
   <footer>
-    <p>Feito para Tablets | © 2025 Simulador Biológico</p>
+    <p>Feito para tablets 📱 | Ciência + Astrologia 🌌</p>
   </footer>
 
+  <script src="celulas.js"></script>
+  <script src="ui.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
