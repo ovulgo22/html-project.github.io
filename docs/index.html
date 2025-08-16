@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Simulador Biologia Espacial - Revolução Total</title>
+<title>Simulador Biologia Espacial 3D</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<h1>Simulador Biologia Espacial</h1>
+<h1>Simulador Biologia Espacial 3D</h1>
 
 <div id="scoreBoard">Pontuação: 0 | Nível: 1 | Recorde: 0 | Prestígio: 0</div>
 <div id="comboBar"><div id="comboFill"></div></div>
@@ -19,6 +19,7 @@
 
 <div class="buttons">
   <button class="btn" id="startBtn">Iniciar Jogo</button>
+  <button class="btn" id="autoCollectBtn">Coleta Automática</button>
   <button class="btn" id="upgradeBtn">Evoluir Célula</button>
   <button class="btn" id="prestigeBtn">Prestígio</button>
   <button class="btn" id="creditsBtn">Créditos</button>
@@ -40,6 +41,8 @@
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r150/three.min.js"></script>
+<script src="background3D.js"></script>
 <script src="script.js"></script>
 <script src="advanced.js"></script>
 <script src="evolution.js"></script>
