@@ -1,95 +1,152 @@
-// Variáveis globais
-let cells = [];
-let totalEnergy = 0;
-let totalMutation = 0;
+const canvas = document.getElementById("bioCanvas");
+const ctx = canvas.getContext("2d");
 
-const cellsContainer = document.getElementById('cells-container');
-const totalCellsSpan = document.getElementById('totalCells');
-const totalEnergySpan = document.getElementById('totalEnergy');
-const totalMutationSpan = document.getElementById('totalMutation');
+canvas.width = canvas.clientWidth;
+canvas.height = canvas.clientHeight;
 
-// Lista de formatos disponíveis
-const shapes = ["circle", "square", "triangle", "hexagon"];
+let celulas = [];
 
-// Criar célula
-function addCell() {
-  let shape = shapes[Math.floor(Math.random() * shapes.length)];
-  let cell = {
-    id: cells.length,
-    energy: Math.floor(Math.random() * 50) + 10,
-    mutation: 0,
-    shape: shape
-  };
-  cells.push(cell);
-  renderCells();
-  updateStats();
-}
+class Celula {
+  constructor(x, y, tipo) {
+    this.x = x;
+    this.y = y;
+    this.raio = 15 + Math.random() * 15;
+    this.tipo = tipo;
+    this.velX = (Math.random() - 0.5) * 2;
+    this.velY = (Math.random() - 0.5) * 2;
+    this.cor = this.definirCor();
+    this.vida = 500 + Math.random() * 800; // vida útil
+    this.tempoDivisao = 200 + Math.random() * 500; // quando se divide
+  }
 
-// Renderizar células
-function renderCells() {
-  cellsContainer.innerHTML = '';
-  cells.forEach(cell => {
-    let cellDiv = document.createElement('div');
+  definirCor() {
+    switch (this.tipo) {
+      case "circulo": return "#21e6c1";
+      case "quadrado": return "#e43f5a";
+      case "estrela": return "#fddb3a";
+      case "triangulo": return "#3a86ff";
+      default: return "#ffffff";
+    }
+  }
 
-    if (cell.shape === "triangle" || cell.shape === "hexagon") {
-      // Formas especiais
-      cellDiv.className = cell.shape;
-    } else {
-      // Formas simples
-      cellDiv.className = `cell ${cell.shape}`;
+  desenhar() {
+    ctx.fillStyle = this.cor;
+    ctx.beginPath();
+
+    if (this.tipo === "circulo") {
+      ctx.arc(this.x, this.y, this.raio, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (this.tipo === "quadrado") {
+      ctx.fillRect(this.x - this.raio, this.y - this.raio, this.raio * 2, this.raio * 2);
+    } else if (this.tipo === "triangulo") {
+      ctx.moveTo(this.x, this.y - this.raio);
+      ctx.lineTo(this.x - this.raio, this.y + this.raio);
+      ctx.lineTo(this.x + this.raio, this.y + this.raio);
+      ctx.closePath();
+      ctx.fill();
+    } else if (this.tipo === "estrela") {
+      let spikes = 5;
+      let outerRadius = this.raio;
+      let innerRadius = this.raio / 2;
+      let rot = Math.PI / 2 * 3;
+      let step = Math.PI / spikes;
+
+      ctx.moveTo(this.x, this.y - outerRadius);
+      for (let i = 0; i < spikes; i++) {
+        ctx.lineTo(this.x + Math.cos(rot) * outerRadius, this.y + Math.sin(rot) * outerRadius);
+        rot += step;
+        ctx.lineTo(this.x + Math.cos(rot) * innerRadius, this.y + Math.sin(rot) * innerRadius);
+        rot += step;
+      }
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
+
+  mover() {
+    this.x += this.velX;
+    this.y += this.velY;
+
+    if (this.x < this.raio || this.x > canvas.width - this.raio) this.velX *= -1;
+    if (this.y < this.raio || this.y > canvas.height - this.raio) this.velY *= -1;
+
+    this.vida--;
+
+    if (this.vida <= 0) {
+      this.morrer();
     }
 
-    cellDiv.title = `Energia: ${cell.energy} | Mutação: ${cell.mutation}`;
-    cellDiv.style.filter = `hue-rotate(${cell.mutation * 30}deg)`;
-    cellsContainer.appendChild(cellDiv);
-  });
-}
-
-// Alimentar células
-function feedCells() {
-  cells.forEach(cell => {
-    let food = Math.floor(Math.random() * 20) + 5;
-    cell.energy += food;
-    totalEnergy += food;
-  });
-  updateStats();
-  renderCells();
-}
-
-// Dividir células
-function divideCells() {
-  let newCells = [];
-  cells.forEach(cell => {
-    if (cell.energy >= 50) {
-      cell.energy = Math.floor(cell.energy / 2);
-      let daughter = { ...cell, id: cells.length + newCells.length };
-      newCells.push(daughter);
+    this.tempoDivisao--;
+    if (this.tempoDivisao <= 0) {
+      this.dividir();
     }
-  });
-  cells = cells.concat(newCells);
-  updateStats();
-  renderCells();
-}
+  }
 
-// Mutação
-function mutateCells() {
-  cells.forEach(cell => {
-    let mutationChance = Math.random();
-    if (mutationChance > 0.7) {
-      cell.mutation += 1;
-      totalMutation += 1;
+  dividir() {
+    if (this.raio > 10) {
+      celulas.push(new Celula(this.x + 5, this.y + 5, this.tipo));
+      this.tempoDivisao = 200 + Math.random() * 500;
     }
-  });
-  updateStats();
-  renderCells();
+  }
+
+  morrer() {
+    let index = celulas.indexOf(this);
+    if (index > -1) {
+      celulas.splice(index, 1);
+    }
+  }
 }
 
-// Atualizar estatísticas
-function updateStats() {
-  totalCellsSpan.textContent = cells.length;
-  totalEnergySpan.textContent = totalEnergy;
-  totalMutationSpan.textContent = totalMutation;
+// ---------- Interações biológicas ----------
+function interacoes() {
+  for (let i = 0; i < celulas.length; i++) {
+    for (let j = i + 1; j < celulas.length; j++) {
+      let a = celulas[i];
+      let b = celulas[j];
+
+      let dx = a.x - b.x;
+      let dy = a.y - b.y;
+      let dist = Math.sqrt(dx * dx + dy * dy);
+
+      // Fagocitose
+      if (dist < a.raio && a.raio > b.raio * 1.3) {
+        a.raio += b.raio * 0.2; // cresce ao comer
+        b.morrer();
+      }
+      if (dist < b.raio && b.raio > a.raio * 1.3) {
+        b.raio += a.raio * 0.2;
+        a.morrer();
+      }
+
+      // Fusão (mesma cor)
+      if (dist < a.raio + b.raio && a.cor === b.cor) {
+        a.raio += b.raio * 0.3;
+        b.morrer();
+      }
+    }
+  }
 }
 
-// Inicializar com 3 células
-for (let i = 0; i < 3; i++) addCell();
+function adicionarCelula(tipo) {
+  let x = Math.random() * canvas.width;
+  let y = Math.random() * canvas.height;
+  celulas.push(new Celula(x, y, tipo));
+}
+
+function limparCelulas() {
+  celulas = [];
+}
+
+function animar() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (let celula of celulas) {
+    celula.mover();
+    celula.desenhar();
+  }
+
+  interacoes();
+  requestAnimationFrame(animar);
+}
+
+animar();
