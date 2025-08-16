@@ -3,28 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simulador Científico de Biologia</title>
+  <title>Simulador de Biologia</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Simulador Científico de Biologia</h1>
+  <header>
+    <h1>Simulador Científico de Biologia</h1>
+    <p>Observe e interaja com diferentes tipos de células!</p>
+  </header>
 
-  <div id="simulator">
-    <div id="cells-container"></div>
+  <main>
+    <canvas id="bioCanvas"></canvas>
 
-    <div class="controls">
-      <button onclick="addCell()">Criar Célula</button>
-      <button onclick="feedCells()">Alimentar Células</button>
-      <button onclick="divideCells()">Dividir Células</button>
-      <button onclick="mutateCells()">Mutação Aleatória</button>
+    <div id="controls">
+      <button onclick="adicionarCelula('circulo')">Adicionar Célula Circular</button>
+      <button onclick="adicionarCelula('quadrado')">Adicionar Célula Quadrada</button>
+      <button onclick="adicionarCelula('estrela')">Adicionar Célula Estrela</button>
+      <button onclick="adicionarCelula('triangulo')">Adicionar Célula Triangular</button>
+      <button onclick="limparCelulas()">Limpar</button>
     </div>
+  </main>
 
-    <div id="stats">
-      <p>Total de Células: <span id="totalCells">0</span></p>
-      <p>Total de Energia: <span id="totalEnergy">0</span></p>
-      <p>Total de Mutação: <span id="totalMutation">0</span></p>
-    </div>
-  </div>
+  <footer>
+    <p>Feito para Tablets | © 2025 Simulador Biológico</p>
+  </footer>
 
   <script src="script.js"></script>
 </body>
