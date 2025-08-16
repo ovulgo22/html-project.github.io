@@ -1,1 +1,269 @@
-<!-- Conteúdo do index.html (omiti para encurtar, será incluído no ZIP) -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador Avançado de Biologia</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #e0f7fa;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            min-height: 100vh;
+        }
+        h1 { color: #00796b; margin-bottom: 20px; text-align: center; }
+
+        #simulator {
+            background: #ffffffcc;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            padding: 20px;
+            width: 100%;
+            max-width: 900px;
+            position: relative;
+            overflow: hidden;
+            height: 600px;
+        }
+
+        .cell {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            color: white;
+            transition: transform 0.3s;
+        }
+
+        .energy-bar {
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            height: 5px;
+            width: 100%;
+            background: #cfd8dc;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .energy-bar-inner {
+            height: 100%;
+            background: #4caf50;
+            width: 100%;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 1em;
+            border: none;
+            border-radius: 10px;
+            background-color: #00796b;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover { background-color: #004d40; }
+
+        #stats {
+            margin-top: 20px;
+            font-size: 1.1em;
+        }
+
+        @media (max-width: 768px) {
+            .cell { width: 40px; height: 40px; font-size: 0.7em; }
+            button { width: 45%; margin-bottom: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Simulador Avançado de Biologia</h1>
+
+    <div id="simulator"></div>
+
+    <div class="controls">
+        <button onclick="addCell()">Criar Célula</button>
+        <button onclick="feedCells()">Alimentar Células</button>
+        <button onclick="mutateCells()">Mutação Aleatória</button>
+        <button onclick="togglePredators()">Toggle Predadores</button>
+    </div>
+
+    <div id="stats">
+        <p>Total de Células: <span id="totalCells">0</span></p>
+        <p>Total de Energia: <span id="totalEnergy">0</span></p>
+        <p>Total de Mutação: <span id="totalMutation">0</span></p>
+        <p>Total de Predadores: <span id="totalPredators">0</span></p>
+    </div>
+
+    <script>
+        const simulator = document.getElementById('simulator');
+        const totalCellsSpan = document.getElementById('totalCells');
+        const totalEnergySpan = document.getElementById('totalEnergy');
+        const totalMutationSpan = document.getElementById('totalMutation');
+        const totalPredatorsSpan = document.getElementById('totalPredators');
+
+        let cells = [];
+        let predators = [];
+        let totalEnergy = 0;
+        let totalMutation = 0;
+        let predatorMode = false;
+
+        const simulatorWidth = simulator.clientWidth;
+        const simulatorHeight = simulator.clientHeight;
+
+        function randomPosition(size=50) {
+            return {
+                x: Math.random() * (simulatorWidth - size),
+                y: Math.random() * (simulatorHeight - size)
+            };
+        }
+
+        function addCell() {
+            const pos = randomPosition();
+            let cell = {
+                id: cells.length,
+                energy: Math.floor(Math.random() * 50) + 20,
+                mutation: 0,
+                x: pos.x,
+                y: pos.y,
+                vx: (Math.random() - 0.5) * 2,
+                vy: (Math.random() - 0.5) * 2,
+                age: 0
+            };
+            cells.push(cell);
+            renderCells();
+        }
+
+        function renderCells() {
+            simulator.innerHTML = '';
+            cells.forEach(cell => {
+                const div = document.createElement('div');
+                div.className = 'cell';
+                div.style.left = cell.x + 'px';
+                div.style.top = cell.y + 'px';
+                div.style.backgroundColor = `rgb(${255 - cell.mutation*15}, ${171 + cell.mutation*5}, ${145})`;
+                div.title = `Energia: ${cell.energy} | Mutação: ${cell.mutation} | Idade: ${cell.age}`;
+                
+                const energyBar = document.createElement('div');
+                energyBar.className = 'energy-bar';
+                const energyInner = document.createElement('div');
+                energyInner.className = 'energy-bar-inner';
+                energyInner.style.width = Math.min(cell.energy, 100) + '%';
+                energyBar.appendChild(energyInner);
+                div.appendChild(energyBar);
+
+                simulator.appendChild(div);
+            });
+
+            // Render predadores se ativado
+            if(predatorMode) {
+                predators.forEach(pred => {
+                    const predDiv = document.createElement('div');
+                    predDiv.className = 'cell';
+                    predDiv.style.left = pred.x + 'px';
+                    predDiv.style.top = pred.y + 'px';
+                    predDiv.style.backgroundColor = 'red';
+                    predDiv.textContent = 'P';
+                    simulator.appendChild(predDiv);
+                });
+            }
+
+            updateStats();
+        }
+
+        function updateStats() {
+            totalCellsSpan.textContent = cells.length;
+            totalEnergySpan.textContent = totalEnergy;
+            totalMutationSpan.textContent = totalMutation;
+            totalPredatorsSpan.textContent = predators.length;
+        }
+
+        function feedCells() {
+            cells.forEach(cell => {
+                let food = Math.floor(Math.random() * 20) + 5;
+                cell.energy += food;
+                totalEnergy += food;
+            });
+            renderCells();
+        }
+
+        function mutateCells() {
+            cells.forEach(cell => {
+                if(Math.random() > 0.7) {
+                    cell.mutation += 1;
+                    totalMutation += 1;
+                }
+            });
+            renderCells();
+        }
+
+        function togglePredators() {
+            predatorMode = !predatorMode;
+            if(predatorMode && predators.length === 0) {
+                for(let i=0;i<3;i++) {
+                    let pos = randomPosition();
+                    predators.push({x: pos.x, y: pos.y, vx: (Math.random()-0.5)*3, vy: (Math.random()-0.5)*3});
+                }
+            }
+        }
+
+        function moveEntities() {
+            // Movimento células
+            cells.forEach(cell => {
+                cell.x += cell.vx;
+                cell.y += cell.vy;
+                // Limites
+                if(cell.x <= 0 || cell.x >= simulatorWidth - 50) cell.vx *= -1;
+                if(cell.y <= 0 || cell.y >= simulatorHeight - 50) cell.vy *= -1;
+                // Perda de energia natural
+                cell.energy -= 0.05;
+                cell.age += 0.05;
+            });
+
+            // Movimento predadores
+            if(predatorMode) {
+                predators.forEach(pred => {
+                    pred.x += pred.vx;
+                    pred.y += pred.vy;
+                    if(pred.x <= 0 || pred.x >= simulatorWidth - 50) pred.vx *= -1;
+                    if(pred.y <= 0 || pred.y >= simulatorHeight - 50) pred.vy *= -1;
+
+                    // Caçar células
+                    cells.forEach((cell, idx) => {
+                        const dx = pred.x - cell.x;
+                        const dy = pred.y - cell.y;
+                        const distance = Math.sqrt(dx*dx + dy*dy);
+                        if(distance < 30) {
+                            cells.splice(idx,1); // predador come célula
+                        }
+                    });
+                });
+            }
+
+            // Remover células mortas
+            cells = cells.filter(cell => cell.energy > 0 && cell.age < 100);
+
+            renderCells();
+            requestAnimationFrame(moveEntities);
+        }
+
+        // Inicialização
+        for(let i=0;i<5;i++) addCell();
+        moveEntities();
+    </script>
+</body>
+</html>
