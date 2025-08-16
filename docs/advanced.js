@@ -1,4 +1,4 @@
-// === Advanced Cosmic Effects ===
+// === Efeitos cósmicos e funcionalidades avançadas ===
 const advancedParticles = [];
 const maxStars = 100;
 
@@ -28,7 +28,7 @@ function animateStars(){
     requestAnimationFrame(animateStars);
 }
 
-// Evento especial: Super Cometa
+// Evento Super Cometa
 function superComet(){
     let comet=document.createElement('div');
     comet.classList.add('particle');
@@ -40,17 +40,13 @@ function superComet(){
     let speed=3+Math.random()*2;
     let angle=Math.random()*0.5-0.25;
 
-    // Ao clicar, multiplica pontos por 10 por 10 segundos
+    // Clique ativa multiplicador temporário
     comet.addEventListener('click',()=>{
+        playSound('superComet');
         message("Super Cometa! Pontos x10 por 10s!");
-        let oldMultiplier = researches.reduce((m,r)=>r.bought&&r.multiplier?m*r.multiplier:m,1);
-        let tempMultiplier = oldMultiplier*10;
-        scoreBoard.style.color='#ffdd00';
-        setTimeout(()=>{scoreBoard.style.color='#fff';},10000);
-
-        // Aplica multiplicador temporário
-        const tempInterval = setInterval(()=>{score+=0;scoreBoard.textContent=`Pontuação: ${score} | Nível: ${level} | Recorde: ${record} | Prestígio: ${prestige}`;},100);
-        setTimeout(()=>clearInterval(tempInterval),10000);
+        let tempMultiplier=10;
+        let interval=setInterval(()=>{score+=0; updateHUD();},100);
+        setTimeout(()=>clearInterval(interval),10000);
         comet.remove();
     });
 
@@ -65,22 +61,38 @@ function superComet(){
     move();
 }
 
-// Evento aleatório de mini explosão
+// Mini explosão de células
 function miniExplosion(){
+    playSound('miniExplosion');
     let count=5+Math.floor(Math.random()*5);
     for(let i=0;i<count;i++){
-        createCell();
+        spawnCell();
     }
     message("Mini explosão! Novas células!");
 }
 
-// Conquistas dinâmicas
-function checkAdvancedAchievements(){
-    if(combo>=5 && !achievements.comboMaster){achievements.comboMaster=true; addBadge("Combo Master!");}
-    if(score>=500 && !achievements.spaceExplorer){achievements.spaceExplorer=true; addBadge("Space Explorer!");}
+// Mensagem temporária na tela
+function message(text){
+    let msg=document.createElement('div');
+    msg.textContent=text;
+    msg.style.position='absolute';
+    msg.style.top='10%';
+    msg.style.left='50%';
+    msg.style.transform='translateX(-50%)';
+    msg.style.color='#ffea00';
+    msg.style.fontSize='4vw';
+    msg.style.fontWeight='bold';
+    gameArea.appendChild(msg);
+    setTimeout(()=>msg.remove(),2000);
 }
 
-// Efeito de combo visual
+// Conquistas avançadas
+function checkAdvancedAchievements(){
+    if(combo>=10 && !achievements.comboMaster2){achievements.comboMaster2=true; addBadge("Combo Expert!");}
+    if(score>=1000 && !achievements.galaxyExplorer){achievements.galaxyExplorer=true; addBadge("Galaxy Explorer!");}
+}
+
+// Efeito visual de combo
 function comboVisualEffect(){
     if(combo>=5){
         gameArea.style.boxShadow='0 0 20px #00ffea';
@@ -88,11 +100,11 @@ function comboVisualEffect(){
     }
 }
 
-// === Inicialização ===
+// Inicialização de efeitos
 createStars();
 animateStars();
 
-// Eventos aleatórios
+// Eventos aleatórios cósmicos
 setInterval(()=>{
     if(Math.random()<0.05) superComet();
     if(Math.random()<0.1) miniExplosion();
